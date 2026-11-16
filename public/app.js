@@ -44,7 +44,7 @@
   function ago(iso) {
     if (!iso) return 'not checked yet';
     const seconds = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 1000));
-    if (seconds < 90) return `checked ${seconds} seconds ago`;
+    if (seconds < 90) return seconds === 1 ? 'checked 1 second ago' : `checked ${seconds} seconds ago`;
     if (seconds < 5400) return `checked ${Math.round(seconds / 60)} minutes ago`;
     return `checked ${Math.round(seconds / 3600)} hours ago`;
   }

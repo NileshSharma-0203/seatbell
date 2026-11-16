@@ -135,7 +135,7 @@ async function underLimit(db: Queryable, key: string, limit: number, windowSecon
 function ago(iso: string | null): string {
   if (!iso) return 'Not yet';
   const seconds = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 1000));
-  if (seconds < 90) return `${seconds} seconds ago`;
+  if (seconds < 90) return seconds === 1 ? '1 second ago' : `${seconds} seconds ago`;
   if (seconds < 5400) return `${Math.round(seconds / 60)} minutes ago`;
   return `${Math.round(seconds / 3600)} hours ago`;
 }
