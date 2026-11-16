@@ -1,0 +1,27 @@
+{
+  "name": "seatbell",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "dev:web": "node --watch --env-file=.env src/web/main.ts",
+    "dev:worker": "node --watch --env-file=.env src/worker/main.ts",
+    "start:web": "node src/web/main.ts",
+    "start:worker": "node src/worker/main.ts",
+    "migrate": "node src/migrate.ts",
+    "stats": "node src/stats.ts",
+    "probe": "node --env-file-if-exists=.env src/asu/probe.ts",
+    "vapid": "node src/notify/generate-vapid.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --test-concurrency=1 \"test/*.test.ts\""
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "typescript": "^6.0.3"
+  }
+}

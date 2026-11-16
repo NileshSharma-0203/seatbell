@@ -1,0 +1,95 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: seatbell_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/seatbell_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+  image:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.name.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: name
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.name.outputs.image }}
+
+  deploy:
+    needs: image
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: read
+    env:
+      IMAGE: ${{ needs.image.outputs.image }}
+      TARGET: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+      - name: Copy runtime files
+        run: |
+          tar czf - docker-compose.yml Caddyfile ops | ssh "$TARGET" 'mkdir -p /opt/seatbell && tar xzf - -C /opt/seatbell'
+      - name: Roll out
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | ssh "$TARGET" "docker login ghcr.io -u ${{ github.actor }} --password-stdin"
+          ssh "$TARGET" "sh /opt/seatbell/ops/deploy.sh $IMAGE"
+      - name: Smoke test
+        run: |
+          domain=$(ssh "$TARGET" "grep '^DOMAIN=' /opt/seatbell/.env | cut -d= -f2")
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            curl -fsS "https://$domain/readyz" && exit 0
+            sleep 3
+          done
+          exit 1

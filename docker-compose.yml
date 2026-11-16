@@ -1,0 +1,126 @@
+name: seatbell
+
+x-app: &app
+  image: ${IMAGE:-seatbell:local}
+  restart: unless-stopped
+  env_file: .env
+  environment: &app-env
+    NODE_ENV: production
+    DATABASE_URL: postgres://seatbell:${POSTGRES_PASSWORD}@db:5432/seatbell
+  logging:
+    driver: json-file
+    options: { max-size: 10m, max-file: "5" }
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: seatbell
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: seatbell
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U seatbell]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # One-shot, run by ops/deploy.sh before new code starts.
+  migrate:
+    profiles: [tools]
+    image: ${IMAGE:-seatbell:local}
+    env_file: .env
+    environment: *app-env
+    command: [node, src/migrate.ts]
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    <<: *app
+    command: [node, src/web/main.ts]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/readyz').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+
+  worker:
+    <<: *app
+    command: [node, src/worker/main.ts]
+    stop_grace_period: 15s
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:9091/healthz').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./ops/backup.sh:/backup.sh:ro
+      - ./backups:/backups
+    command: [sh, /backup.sh]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  prometheus:
+    profiles: [monitoring]
+    image: prom/prometheus:v2.55.1
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=120d
+    volumes:
+      - ./ops/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+  grafana:
+    profiles: [monitoring]
+    image: grafana/grafana:11.3.1
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "127.0.0.1:3001:3000"
+    volumes:
+      - ./ops/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./ops/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  db-data:
+  caddy-data:
+  caddy-config:
+  prometheus-data:
+  grafana-data:

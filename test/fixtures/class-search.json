@@ -1,0 +1,32 @@
+{
+  "classes": [
+    {
+      "CLAS": {
+        "CLASSNBR": "12345",
+        "SUBJECT": "CSE",
+        "CATALOGNBR": "310",
+        "TITLE": "Data Structures and Algorithms",
+        "INSTRUCTORSLIST": ["Ada Lovelace", "Ada Lovelace"],
+        "DAYLIST": "T Th",
+        "STARTTIME": "10:30 AM",
+        "ENDTIME": "11:45 AM",
+        "LOCATIONBUILDING": "Tempe BYENG 210",
+        "SESSIONCODE": "C"
+      },
+      "seatInfo": { "ENRL_CAP": 150, "ENRL_TOT": 150 }
+    },
+    {
+      "CLAS": {
+        "CLASSNBR": "12346",
+        "SUBJECT": "CSE",
+        "CATALOGNBR": "310",
+        "TITLE": "Data Structures and Algorithms",
+        "INSTRUCTORSLIST": ["Grace Hopper"],
+        "DAYLIST": "MWF",
+        "STARTTIME": "9:00 AM",
+        "ENDTIME": "9:50 AM"
+      },
+      "seatInfo": { "ENRL_CAP": "80", "ENRL_TOT": "78" }
+    }
+  ]
+}
