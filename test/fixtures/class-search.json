@@ -2,31 +2,31 @@
   "classes": [
     {
       "CLAS": {
-        "CLASSNBR": "12345",
-        "SUBJECT": "CSE",
-        "CATALOGNBR": "310",
-        "TITLE": "Data Structures and Algorithms",
-        "INSTRUCTORSLIST": ["Ada Lovelace", "Ada Lovelace"],
-        "DAYLIST": "T Th",
-        "STARTTIME": "10:30 AM",
-        "ENDTIME": "11:45 AM",
-        "LOCATIONBUILDING": "Tempe BYENG 210",
-        "SESSIONCODE": "C"
+        "STRM": "2271", "CLASSNBR": "11198", "SUBJECT": "CSE", "CATALOGNBR": "310", "SESSIONCODE": "C",
+        "TITLE": "Data Structures and Algorithms", "STARTTIME": "9:00 AM", "ENDTIME": "10:15 AM",
+        "ENRLTOT": 150, "ENRLCAP": 150, "INSTRUCTORSLIST": ["Xuerong Feng"], "DAYLIST": "M W", "HASACTIVERESERVEDSEATS": "N"
       },
+      "DAYLIST": "M W",
+      "LOCATIONBUILDING": "[{\"NAMEFORSORTING\":\"TEMPE - COOR170\",\"NAME\":\"Tempe - COOR170\",\"DESCR\":\"ASU at Tempe\",\"ADDRESS\":\"Lattie Coor Hall 170 (Tempe)\",\"URL\":\"\"}]",
       "seatInfo": { "ENRL_CAP": 150, "ENRL_TOT": 150 }
     },
     {
       "CLAS": {
-        "CLASSNBR": "12346",
-        "SUBJECT": "CSE",
-        "CATALOGNBR": "310",
-        "TITLE": "Data Structures and Algorithms",
-        "INSTRUCTORSLIST": ["Grace Hopper"],
-        "DAYLIST": "MWF",
-        "STARTTIME": "9:00 AM",
-        "ENDTIME": "9:50 AM"
+        "STRM": "2271", "CLASSNBR": "21153", "SUBJECT": "CSE", "CATALOGNBR": "310", "SESSIONCODE": "C",
+        "TITLE": "Data Structures and Algorithms", "STARTTIME": "12:00 PM", "ENDTIME": "1:15 PM",
+        "ENRLTOT": 138, "ENRLCAP": 150, "INSTRUCTORSLIST": ["Guoliang Xue", "Guoliang Xue"], "DAYLIST": "T Th"
       },
-      "seatInfo": { "ENRL_CAP": "80", "ENRL_TOT": "78" }
+      "DAYLIST": "T Th",
+      "LOCATIONBUILDING": "[{\"NAME\":\"Tempe - EDC117\"}]",
+      "seatInfo": { "ENRL_CAP": "150", "ENRL_TOT": "138" }
+    },
+    {
+      "CLAS": {
+        "STRM": "2271", "CLASSNBR": "24400", "SUBJECT": "CSE", "CATALOGNBR": "310",
+        "TITLE": "Data Structures and Algorithms", "INSTRUCTORSLIST": ["Janaka Balasooriya"]
+      },
+      "LOCATIONBUILDING": [{ "NAME": "ASU Online" }],
+      "seatInfo": { "ENRL_CAP": 150, "ENRL_TOT": 80 }
     }
   ]
 }

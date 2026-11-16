@@ -11,13 +11,18 @@ import { loadConfig } from '../src/config.ts';
 
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/class-search.json', import.meta.url), 'utf8')) as { classes: unknown[] };
 
-test('parses seats from strings and numbers and dedupes instructors', () => {
-  const [full, open] = parseClassSearch(fixture);
-  assert.equal(full!.classNbr, '12345');
+test('parses the live ASU response shape', () => {
+  const [full, open, online] = parseClassSearch(fixture);
+  assert.equal(full!.classNbr, '11198');
   assert.equal(full!.openSeats, 0);
-  assert.equal(full!.instructors, 'Ada Lovelace');
-  assert.equal(open!.openSeats, 2);
-  assert.equal(open!.capacity, 80);
+  assert.equal(full!.days, 'M W');
+  assert.equal(full!.location, 'Tempe - COOR170');
+  assert.equal(open!.openSeats, 12);
+  assert.equal(open!.capacity, 150);
+  assert.equal(open!.instructors, 'Guoliang Xue');
+  assert.equal(open!.location, 'Tempe - EDC117');
+  assert.equal(online!.location, 'ASU Online');
+  assert.equal(online!.days, null);
 });
 
 test('over-enrolled sections count as zero seats', () => {

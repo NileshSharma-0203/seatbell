@@ -45,6 +45,25 @@ function toText(value: unknown): string | null {
   return null;
 }
 
+/** ASU sends locations as a JSON string (or array) of objects with NAME; reduce to "Tempe - COOR170". */
+function toLocation(value: unknown): string | null {
+  let parsed = value;
+  if (typeof value === 'string' && value.trim().startsWith('[')) {
+    try {
+      parsed = JSON.parse(value);
+    } catch {
+      return toText(value);
+    }
+  }
+  if (Array.isArray(parsed)) {
+    const names = parsed
+      .map((item) => (isObj(item) ? toText(item.NAME ?? item.DESCR) : toText(item)))
+      .filter((v): v is string => Boolean(v));
+    return names.length ? [...new Set(names)].join(', ') : null;
+  }
+  return toText(parsed);
+}
+
 function parseRecord(record: unknown): SectionSnapshot | null {
   if (!isObj(record)) return null;
   const clas = isObj(record.CLAS) ? record.CLAS : {};
@@ -63,7 +82,7 @@ function parseRecord(record: unknown): SectionSnapshot | null {
     days: toText(firstOf(sources, ['DAYLIST', 'DAYS', 'days'])),
     startTime: toText(firstOf(sources, ['STARTTIME', 'STARTDATETIME', 'startTime'])),
     endTime: toText(firstOf(sources, ['ENDTIME', 'ENDDATETIME', 'endTime'])),
-    location: toText(firstOf(sources, ['LOCATIONBUILDING', 'LOCATION', 'CAMPUS', 'location'])),
+    location: toLocation(firstOf(sources, ['LOCATIONBUILDING', 'LOCATION', 'CAMPUS', 'location'])),
     sessionCode: toText(firstOf(sources, ['SESSIONCODE', 'sessionCode'])),
     enrolled,
     capacity,
